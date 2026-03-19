@@ -1,0 +1,65 @@
+PROMPT === Procedure SP_CARGA_DIM_PRODUTO ===
+
+CREATE OR REPLACE PROCEDURE SP_CARGA_DIM_PRODUTO IS
+    V_QTD NUMBER := 0;
+BEGIN
+    MERGE INTO DIM_PRODUTO D
+    USING (
+        SELECT
+            -1 AS COD_PRODUTO,
+            'NAO INFORMADO' AS NOM_PRODUTO,
+            NULL AS COD_BARRA,
+            'N/I' AS STA_ATIVO,
+            NULL AS DAT_CADASTRO,
+            NULL AS DAT_CANCELAMENTO
+        FROM DUAL
+        UNION ALL
+        SELECT
+            COD_PRODUTO,
+            NOM_PRODUTO,
+            COD_BARRA,
+            STA_ATIVO,
+            DAT_CADASTRO,
+            DAT_CANCELAMENTO
+        FROM CP_PRODUTO
+    ) S
+       ON (D.COD_PRODUTO = S.COD_PRODUTO)
+    WHEN MATCHED THEN UPDATE SET
+        D.NOM_PRODUTO      = S.NOM_PRODUTO,
+        D.COD_BARRA        = S.COD_BARRA,
+        D.STA_ATIVO        = S.STA_ATIVO,
+        D.DAT_CADASTRO     = S.DAT_CADASTRO,
+        D.DAT_CANCELAMENTO = S.DAT_CANCELAMENTO
+    WHEN NOT MATCHED THEN INSERT (
+        COD_PRODUTO,
+        NOM_PRODUTO,
+        COD_BARRA,
+        STA_ATIVO,
+        DAT_CADASTRO,
+        DAT_CANCELAMENTO
+    ) VALUES (
+        S.COD_PRODUTO,
+        S.NOM_PRODUTO,
+        S.COD_BARRA,
+        S.STA_ATIVO,
+        S.DAT_CADASTRO,
+        S.DAT_CANCELAMENTO
+    );
+
+    V_QTD := SQL%ROWCOUNT;
+    COMMIT;
+
+    SP_REGISTRA_LOG_ETL('SP_CARGA_DIM_PRODUTO', V_QTD, 'SUCESSO', 'Carga concluída com MERGE.');
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        SP_REGISTRA_LOG_ETL('SP_CARGA_DIM_PRODUTO', 0, 'ERRO', SQLERRM);
+        RAISE;
+END;
+/
+
+PROMPT === Executando SP_CARGA_DIM_PRODUTO ===
+BEGIN
+    SP_CARGA_DIM_PRODUTO;
+END;
+/
