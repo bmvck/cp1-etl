@@ -87,3 +87,6 @@ Giro de Estoque = DIVIDE([Total Saidas], [Saldo Medio Periodo])
 
 <img width="594" height="454" alt="image" src="https://github.com/user-attachments/assets/105015b9-9e51-4090-876b-58e6cd5b8065" />
 
+<img width="432" height="497" alt="image" src="https://github.com/user-attachments/assets/564c7b14-306d-46cc-96dd-b38f6f64a8b9" />
+
+
